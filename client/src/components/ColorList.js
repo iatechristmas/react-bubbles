@@ -8,6 +8,15 @@ const initialColor = {
   code: { hex: "" },
 };
 
+const randomColor = () => {
+  const randomizer = Math.floor(Math.random() * 16777215).toString(16);
+  const colorArray = {
+    color: "Random" + randomizer,
+    code: { hex: "#" + randomizer },
+  };
+  return colorArray;
+};
+
 const ColorList = ({ colors, updateColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
@@ -55,6 +64,16 @@ const ColorList = ({ colors, updateColors }) => {
       });
   };
 
+  const addRandomColor = (e) => {
+    setColorToEdit(randomColor);
+    axiosWithAuth()
+      .post(`http://localhost:5000/api/colors`, randomColor())
+      .then((res) => {
+        console.log("addRandomColor -> res", res);
+        updateColors(res.data);
+      });
+  };
+
   return (
     <div className="colors-wrap">
       <p>colors</p>
@@ -81,7 +100,10 @@ const ColorList = ({ colors, updateColors }) => {
         ))}
       </ul>
       <div className="button-row">
-        <button onClick={() => setAdding(true)}>Add Color</button>
+        <button onClick={() => setAdding(true)}>Add Custom Color</button>
+      </div>
+      <div className="button-row">
+        <button onClick={() => addRandomColor()}>Add Random Color</button>
       </div>
       {editing && (
         <form onSubmit={saveEdit}>
