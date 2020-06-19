@@ -1,27 +1,17 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { axiosWithAuth } from "../utils/axiosWithAuth";
-import { Redirect } from "react-router-dom";
 
 const initialColor = {
   color: "",
   code: { hex: "" },
 };
 
-const randomColor = () => {
-  const randomizer = Math.floor(Math.random() * 16777215).toString(16);
-  const colorArray = {
-    color: "Random" + randomizer,
-    code: { hex: "#" + randomizer },
-  };
-  return colorArray;
-};
-
 const ColorList = ({ colors, updateColors }) => {
-  console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
   const [adding, setAdding] = useState(false);
+  const [addingRandom, setAddingRandom] = useState(false);
+  const [number, setNumber] = useState(1);
 
   const editColor = (color) => {
     setEditing(true);
@@ -64,13 +54,28 @@ const ColorList = ({ colors, updateColors }) => {
       });
   };
 
+  const randomColor = () => {
+    const randomizer = Math.floor(Math.random() * 16777215).toString(16);
+    const colorObject = {
+      color: "#" + randomizer,
+      code: { hex: "#" + randomizer },
+    };
+    return colorObject;
+  };
+
+  const randomColorIterator = (e) => {
+    e.preventDefault();
+    setNumber(1);
+    for (let i = number; i > 0; i--) addRandomColor();
+  };
+
   const addRandomColor = (e) => {
-    setColorToEdit(randomColor);
     axiosWithAuth()
       .post(`http://localhost:5000/api/colors`, randomColor())
       .then((res) => {
         console.log("addRandomColor -> res", res);
         updateColors(res.data);
+        setAddingRandom(false);
       });
   };
 
@@ -103,7 +108,7 @@ const ColorList = ({ colors, updateColors }) => {
         <button onClick={() => setAdding(true)}>Add Custom Color</button>
       </div>
       <div className="button-row">
-        <button onClick={() => addRandomColor()}>Add Random Color</button>
+        <button onClick={() => setAddingRandom(true)}>Add Random Color</button>
       </div>
       {editing && (
         <form onSubmit={saveEdit}>
@@ -132,6 +137,19 @@ const ColorList = ({ colors, updateColors }) => {
           <div className="button-row">
             <button type="submit">save</button>
             <button onClick={() => setEditing(false)}>cancel</button>
+          </div>
+        </form>
+      )}
+      {addingRandom && (
+        <form onSubmit={randomColorIterator}>
+          <legend>how many?</legend>
+          <label>
+            number of colors:
+            <input value={number} onChange={(e) => setNumber(e.target.value)} />
+          </label>
+          <div className="button-row">
+            <button type="submit">save</button>
+            <button onClick={() => setAddingRandom(false)}>cancel</button>
           </div>
         </form>
       )}
